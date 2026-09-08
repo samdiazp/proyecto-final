@@ -25,6 +25,8 @@ resource "aws_lambda_function" "api_lambda" {
 
             ENVIRONMENT          = var.environment
             SERVICE_NAME         = "api"
+            REGION               = var.region
+            JWT_SECRET_ARN       = aws_secretsmanager_secret.jwt_secret.arn
         }
     }
 

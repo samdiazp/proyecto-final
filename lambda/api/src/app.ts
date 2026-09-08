@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { trpcServer } from "@hono/trpc-server";
 
 import { appRouter } from "./trpc/routers";
+import { createContext } from "./trpc/context";
+
 
 export const app = new Hono();
 
@@ -30,5 +32,6 @@ app.use(
   trpcServer({
     endpoint: `${stage}/api/trpc`,
     router: appRouter,
+    createContext
   }),
 );

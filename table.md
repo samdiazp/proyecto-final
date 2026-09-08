@@ -31,8 +31,10 @@ SK: META S
 fullname: $NAME S
 entity: USER
 email: $EMAIL S
-hashed_pwd: $HASHED S
+hashedPwd: $HASHED S
 createdAt: $DATE S
+GSI1PK: EMAIL#$EMAIL S
+GSISK: USER#$ID S
 
 ## Recursos
 PK: RESOURCE#$ID S
@@ -41,6 +43,7 @@ name: $NAME S
 entity: RESOURCE S 
 spots:  $SPOTS N
 availableSpots $AVAILABLE N
+description $DESCRIPTION S
 createdAt: $DATE S
 GSI1PK: RESOURCE S
 GSI1SK: CREATED#$DATE#$ID S
