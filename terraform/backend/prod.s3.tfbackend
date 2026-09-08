@@ -1,0 +1,5 @@
+bucket = "book-slot-tfstate-746143677067-us-east-1-an"
+key = "proyecto-final/prod/terraform.tfstate"
+region = "us-east-1"
+encrypt = true
+use_lockfile = true

@@ -1,0 +1,12 @@
+lambda/api/node_modules/
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+*.tfvars
+*.tfvars.json
+
+# Planes
+*.tfplan
