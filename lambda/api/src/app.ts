@@ -26,7 +26,7 @@ app.get("/health", (c) => {
 
 
 app.use(
-  `${stage}/api/trpc`,
+  `${stage}/api/trpc/*`,
   trpcServer({
     endpoint: `${stage}/api/trpc`,
     router: appRouter,
