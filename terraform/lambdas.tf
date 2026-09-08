@@ -47,7 +47,7 @@ resource "aws_lambda_function" "api_lambda" {
 data "archive_file" "lambda_email_zip" {
     type        = "zip"
     source_dir  = "${path.module}/../lambda/email"
-    output_path = "${path.module}/../lambda/email.zip"
+    output_path = "${path.module}/../lambda/email/email.zip"
 }
 
 resource "aws_lambda_function" "email_lambda" {
