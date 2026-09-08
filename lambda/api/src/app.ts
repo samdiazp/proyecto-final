@@ -5,16 +5,30 @@ import { appRouter } from "./trpc/routers";
 
 export const app = new Hono();
 
+const stage = process.env.ENVIRONMENT || "dev"
+
+app.use("*", async (c, next) => {
+  console.log("REQUEST", {
+    method: c.req.method,
+    path: c.req.path,
+    url: c.req.url,
+  });
+
+  await next();
+});
+
 app.get("/health", (c) => {
   return c.json({
     status: "ok",
   });
 });
 
+
+
 app.use(
-  "/api/trpc/*",
+  `${stage}/api/trpc`,
   trpcServer({
-    endpoint: "/api/trpc",
+    endpoint: `${stage}/api/trpc`,
     router: appRouter,
   }),
 );
