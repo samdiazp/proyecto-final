@@ -27,6 +27,7 @@ resource "aws_lambda_function" "api_lambda" {
             SERVICE_NAME         = "api"
             REGION               = var.region
             JWT_SECRET_ARN       = aws_secretsmanager_secret.jwt_secret.arn
+            FRONTEND_ORIGIN      = "https://${aws_cloudfront_distribution.frontend.domain_name}"
         }
     }
 
