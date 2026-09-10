@@ -118,17 +118,50 @@ export const createReservation = async (
               "attribute_not_exists(PK)",
           },
         },
+        {
+          Put: {
+            TableName: process.env.TABLE_NAME!,
+
+            Item: {
+              PK: `USER#${data.userId}`,
+              SK: `RESOURCE#${data.resourceId}`,
+
+              entity: "RESERVATION_LOCK",
+              reservationId,
+            },
+
+            ConditionExpression:
+              "attribute_not_exists(PK)",
+          },
+        },
       ],
     });
 
-    await createReservationReminder({
-      reservationId,
-      reservationDate: data.reservationDate,
-      email: user.email,
-      resourceName: resource.name,
-    });
-
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === "TransactionCanceledException"
+    ) {
+      const existingReservation = await get({
+        Key: {
+          PK: `USER#${data.userId}`,
+          SK: `RESOURCE#${data.resourceId}`,
+        },
+      });
+
+      if (existingReservation) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "You already have a reservation for this resource",
+        });
+      }
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Not enough available spots",
+      });
+    }
+
     if (
       error instanceof Error &&
       error.name === "ConditionalCheckFailedException"
@@ -139,6 +172,18 @@ export const createReservation = async (
       });
     }
     throw error;
+  }
+
+  try {
+    await createReservationReminder({
+      reservationId,
+      reservationDate: data.reservationDate,
+      email: user.email,
+      resourceName: resource.name,
+    });
+  } catch (error) {
+    // A reminder must not invalidate an already confirmed reservation.
+    console.error("Unable to schedule reservation reminder", error);
   }
 
   return {
@@ -203,4 +248,100 @@ export const getReservationsByResource = async (
 
     ScanIndexForward: order === "ASC",
   });
+};
+
+export const cancelReservation = async ({
+  reservationId,
+  userId,
+}: {
+  reservationId: string;
+  userId: string;
+}) => {
+  const reservation = await getReservationById(reservationId);
+
+  if (!reservation) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Reservation not found",
+    });
+  }
+
+  if (reservation.userId !== userId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You cannot cancel this reservation",
+    });
+  }
+
+  if (reservation.status !== "CONFIRMED") {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "Reservation is already cancelled",
+    });
+  }
+
+  try {
+    await transactWrite({
+      TransactItems: [
+        {
+          Update: {
+            TableName: process.env.TABLE_NAME!,
+            Key: {
+              PK: `RESOURCE#${reservation.resourceId}`,
+              SK: "META",
+            },
+            UpdateExpression:
+              "SET availableSpots = availableSpots + :spots",
+            ConditionExpression: "attribute_exists(PK)",
+            ExpressionAttributeValues: {
+              ":spots": reservation.spots,
+            },
+          },
+        },
+        {
+          Update: {
+            TableName: process.env.TABLE_NAME!,
+            Key: {
+              PK: `RESERVATION#${reservationId}`,
+              SK: "META",
+            },
+            UpdateExpression: "SET #status = :cancelled",
+            ConditionExpression: "#status = :confirmed",
+            ExpressionAttributeNames: {
+              "#status": "status",
+            },
+            ExpressionAttributeValues: {
+              ":cancelled": "CANCELED",
+              ":confirmed": "CONFIRMED",
+            },
+          },
+        },
+        {
+          Delete: {
+            TableName: process.env.TABLE_NAME!,
+            Key: {
+              PK: `USER#${userId}`,
+              SK: `RESOURCE#${reservation.resourceId}`,
+            },
+          },
+        },
+      ],
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === "TransactionCanceledException"
+    ) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "Reservation is already cancelled",
+      });
+    }
+    throw error;
+  }
+
+  return {
+    ...reservation,
+    status: "CANCELED",
+  };
 };

@@ -17,7 +17,7 @@ export const loginUser = async (
 
   const validPassword = await bcrypt.compare(
     password,
-    user.hashed_pwd,
+    user.hashedPwd,
   );
 
   if (!validPassword) {

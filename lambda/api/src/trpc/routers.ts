@@ -21,6 +21,7 @@ import {
 } from "../services/resources";
 
 import {
+  cancelReservation,
   createReservation,
   getReservationById,
   getReservationsByResource,
@@ -82,6 +83,10 @@ export const appRouter = router({
           user,
         };
       } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         if (
           error instanceof Error &&
           error.message ===
@@ -206,6 +211,10 @@ export const appRouter = router({
           reservation,
         };
       } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         if (
           error instanceof Error &&
           error.message === "Resource not found"
@@ -223,6 +232,23 @@ export const appRouter = router({
           cause: error,
         });
       }
+    }),
+
+  cancelReservation: protectedProcedure
+    .input(
+      z.object({
+        reservationId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const reservation = await cancelReservation({
+        reservationId: input.reservationId,
+        userId: ctx.user.userId,
+      });
+
+      return {
+        reservation,
+      };
     }),
 
   getReservation: protectedProcedure

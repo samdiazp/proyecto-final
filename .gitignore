@@ -1,4 +1,5 @@
 lambda/api/node_modules/
+node_modules/
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -14,3 +15,4 @@ crash.*.log
 lambda/api/dist/
 lambda/api/api.zip
 lambda/email/email.zip
+frontend/.env.local

@@ -1,0 +1,376 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #17221f;
+  background: #f5f4ee;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  min-height: 100vh;
+  padding: 2rem;
+  gap: 2rem;
+  background:
+    radial-gradient(circle at 18% 16%, #c6e8d7 0, transparent 30rem),
+    #f5f4ee;
+}
+
+.auth-copy,
+.hero {
+  align-self: center;
+  max-width: 46rem;
+}
+
+.auth-copy h1,
+.hero h1 {
+  max-width: 10ch;
+  margin: 0.5rem 0 1rem;
+  color: #12382e;
+  font-family: Georgia, serif;
+  font-size: clamp(3.2rem, 7vw, 6.8rem);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+}
+
+.auth-copy p:not(.eyebrow),
+.hero > p:last-child {
+  max-width: 31rem;
+  color: #587069;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.auth-card {
+  align-self: center;
+  padding: clamp(1.5rem, 5vw, 3.25rem);
+  border: 1px solid #d7ddd5;
+  border-radius: 1.5rem;
+  background: #fffef9;
+  box-shadow: 0 20px 55px rgb(41 68 55 / 12%);
+}
+
+.auth-heading h2,
+.section-heading h2 {
+  margin: 0.25rem 0 0;
+  color: #163d32;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.form-stack {
+  display: grid;
+  gap: 1rem;
+  margin: 2rem 0 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  color: #35544a;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #bdcac2;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: #17221f;
+}
+
+input:focus {
+  outline: 3px solid #a7e0d2;
+  outline-offset: 1px;
+  border-color: #0f766e;
+}
+
+.button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.55rem;
+  font-weight: 800;
+  transition: transform 150ms ease, background-color 150ms ease;
+}
+
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.button-primary {
+  border: 1px solid #115e59;
+  background: #0f766e;
+  color: white;
+}
+
+.button-primary:not(:disabled):hover {
+  background: #115e59;
+}
+
+.button-secondary {
+  border: 1px solid #bdcac2;
+  background: transparent;
+  color: #285548;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f766e;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.notice {
+  margin: 1rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.notice-success {
+  background: #dff5e8;
+  color: #155f3b;
+}
+
+.notice-error {
+  background: #fbe5e1;
+  color: #9d3428;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 1.25rem clamp(1.25rem, 5vw, 6rem) 5rem;
+  background: #f5f4ee;
+}
+
+.topbar,
+.content-section,
+.hero,
+.app-shell > .notice {
+  max-width: 76rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem;
+  border-bottom: 1px solid #d7ddd5;
+}
+
+.brand {
+  color: #12382e;
+  font-family: Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #527068;
+  font-size: 0.9rem;
+}
+
+.hero {
+  padding: clamp(4rem, 10vw, 8rem) 0 4rem;
+}
+
+.hero h1 {
+  max-width: 12ch;
+  font-size: clamp(3rem, 6vw, 5.7rem);
+}
+
+.content-section {
+  margin-top: 3.75rem;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-heading > span {
+  color: #648077;
+  font-size: 0.85rem;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.resource-card {
+  display: grid;
+  gap: 1.25rem;
+  min-height: 20rem;
+  padding: 1.35rem;
+  border: 1px solid #d7ddd5;
+  border-radius: 1rem;
+  background: #fffef9;
+}
+
+.resource-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.resource-card h3,
+.reservation-row h3 {
+  margin: 0;
+  color: #163d32;
+  font-size: 1.1rem;
+}
+
+.resource-card-header p,
+.reservation-row p {
+  margin: 0.45rem 0 0;
+  color: #648077;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.capacity {
+  height: fit-content;
+  white-space: nowrap;
+  padding: 0.35rem 0.5rem;
+  border-radius: 999px;
+  background: #dff5e8;
+  color: #155f3b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.capacity-full {
+  background: #fbe5e1;
+  color: #9d3428;
+}
+
+.capacity-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-top: 1px solid #e3e7e2;
+  border-bottom: 1px solid #e3e7e2;
+  color: #648077;
+  font-size: 0.85rem;
+}
+
+.capacity-line strong {
+  color: #285548;
+}
+
+.date-input {
+  margin-top: auto;
+}
+
+.reservations-section {
+  padding-top: 2.5rem;
+  border-top: 1px solid #d7ddd5;
+}
+
+.reservation-list {
+  display: grid;
+  border-top: 1px solid #d7ddd5;
+}
+
+.reservation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #d7ddd5;
+}
+
+.cancelled {
+  color: #8a5248;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.empty-state {
+  padding: 1.5rem 0;
+  color: #648077;
+}
+
+@media (max-width: 700px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+
+  .auth-copy {
+    padding: 2rem 0 0;
+  }
+
+  .auth-copy h1 {
+    font-size: clamp(3.2rem, 14vw, 5rem);
+  }
+
+  .app-shell {
+    padding: 0.75rem 1.25rem 3rem;
+  }
+
+  .account span {
+    display: none;
+  }
+
+  .section-heading,
+  .reservation-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reservation-row .button {
+    width: 100%;
+  }
+}
