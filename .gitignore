@@ -16,3 +16,4 @@ lambda/api/dist/
 lambda/api/api.zip
 lambda/email/email.zip
 frontend/.env.local
+frontend/dist/
