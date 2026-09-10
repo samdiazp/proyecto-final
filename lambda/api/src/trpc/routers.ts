@@ -140,6 +140,7 @@ export const appRouter = router({
         name: z.string().min(1),
         description: z.string().optional(),
         spots: z.number().int().min(1),
+        reservationDate: z.string().min(1),
       }),
     )
     .mutation(async ({ input }) => {
@@ -192,7 +193,6 @@ export const appRouter = router({
     .input(
       z.object({
         resourceId: z.string().min(1),
-        reservationDate: z.string().min(1),
         spots: z.number().int().min(1),
       }),
     )
@@ -202,8 +202,6 @@ export const appRouter = router({
           await createReservation({
             userId: ctx.user.userId,
             resourceId: input.resourceId,
-            reservationDate:
-              input.reservationDate,
             spots: input.spots,
           });
 

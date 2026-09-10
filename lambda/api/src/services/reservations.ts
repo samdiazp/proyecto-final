@@ -14,7 +14,6 @@ import { createReservationReminder } from "./scheduler";
 export type CreateReservation = {
   userId: string;
   resourceId: string;
-  reservationDate: string;
   spots: number;
 };
 
@@ -46,6 +45,8 @@ export const createReservation = async (
       message: "Resource not found",
     });
   }
+
+  const reservationDate = resource.reservationDate;
 
   const reservationId = randomUUID();
   const createdAt = new Date().toISOString();
@@ -96,8 +97,7 @@ export const createReservation = async (
 
               spots: data.spots,
 
-              reservationDate:
-                data.reservationDate,
+              reservationDate,
 
               createdAt,
 
@@ -105,13 +105,13 @@ export const createReservation = async (
 
               GSI1PK: `USER#${data.userId}`,
               GSI1SK:
-                `DATE#${data.reservationDate}#${reservationId}`,
+                `DATE#${reservationDate}#${reservationId}`,
 
               GSI2PK:
                 `RESOURCE#${data.resourceId}`,
 
               GSI2SK:
-                `DATE#${data.reservationDate}#${reservationId}`,
+                `DATE#${reservationDate}#${reservationId}`,
             },
 
             ConditionExpression:
@@ -177,12 +177,11 @@ export const createReservation = async (
   try {
     await createReservationReminder({
       reservationId,
-      reservationDate: data.reservationDate,
+      reservationDate,
       email: user.email,
       resourceName: resource.name,
     });
   } catch (error) {
-    // A reminder must not invalidate an already confirmed reservation.
     console.error("Unable to schedule reservation reminder", error);
   }
 
@@ -196,7 +195,7 @@ export const createReservation = async (
     resourceName: resource.name,
 
     spots: data.spots,
-    reservationDate: data.reservationDate,
+    reservationDate,
 
     createdAt,
     status: "CONFIRMED",

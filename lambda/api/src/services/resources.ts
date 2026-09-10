@@ -6,12 +6,14 @@ export type Resource = {
   name: string;
   spots: number;
   availableSpots: number;
+  reservationDate: string;
   createdAt: string;
 };
 
 export type CreateResource = {
   name: string;
   spots: number;
+  reservationDate: string;
   description?: string;
 };
 
@@ -38,6 +40,7 @@ export const createResource = async (
 
       spots: resourceData.spots,
       availableSpots: resourceData.spots,
+      reservationDate: resourceData.reservationDate,
 
       createdAt,
 
@@ -53,6 +56,7 @@ export const createResource = async (
     name: resourceData.name,
     spots: resourceData.spots,
     availableSpots: resourceData.spots,
+    reservationDate: resourceData.reservationDate,
     description: resourceData.description ?? null,
     createdAt,
   };

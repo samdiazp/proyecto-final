@@ -8,6 +8,7 @@ type Resource = {
   description?: string | null;
   spots: number;
   availableSpots: number;
+  reservationDate: string;
 };
 
 type Reservation = {
@@ -54,18 +55,11 @@ const formatDate = (date: string) =>
     timeStyle: "short",
   }).format(new Date(date));
 
-const minimumReservationDate = () => {
-  const date = new Date(Date.now() + 60 * 60 * 1000);
-  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-  return date.toISOString().slice(0, 16);
-};
-
 export default function App() {
   const [session, setSession] = useState<Session | null>(readSession);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [resources, setResources] = useState<Resource[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [reservationDates, setReservationDates] = useState<Record<string, string>>({});
   const [authBusy, setAuthBusy] = useState(false);
   const [busyResourceId, setBusyResourceId] = useState<string | null>(null);
   const [busyReservationId, setBusyReservationId] = useState<string | null>(null);
@@ -132,13 +126,6 @@ export default function App() {
   }
 
   async function reserve(resourceId: string) {
-    const date = reservationDates[resourceId];
-
-    if (!date) {
-      setError("Elige la fecha y hora de tu reserva.");
-      return;
-    }
-
     setBusyResourceId(resourceId);
     setError(null);
     setMessage(null);
@@ -146,7 +133,6 @@ export default function App() {
     try {
       await trpc.createReservation.mutate({
         resourceId,
-        reservationDate: new Date(date).toISOString(),
         spots: 1,
       });
       setMessage("Tu plaza ha quedado confirmada.");
@@ -303,20 +289,10 @@ export default function App() {
                   <strong>{resource.spots} plazas</strong>
                 </div>
 
-                <label className="date-input">
-                  Fecha y hora
-                  <input
-                    type="datetime-local"
-                    min={minimumReservationDate()}
-                    value={reservationDates[resource.resourceId] ?? ""}
-                    onChange={(event) =>
-                      setReservationDates({
-                        ...reservationDates,
-                        [resource.resourceId]: event.target.value,
-                      })
-                    }
-                  />
-                </label>
+                <div className="capacity-line">
+                  <span>Fecha y hora</span>
+                  <strong>{formatDate(resource.reservationDate)}</strong>
+                </div>
 
                 <button
                   className="button button-primary"
