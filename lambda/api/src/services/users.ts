@@ -54,6 +54,7 @@ export const registerUser = async (userData: UserWithPwd) => {
         Item: {
             PK: `USER#${userId}`,
             SK: "META",
+            userId,
             fullname: userData.fullname,
             email: userData.email,
             createdAt: new Date().toISOString(),
