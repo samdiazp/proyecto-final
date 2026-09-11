@@ -342,6 +342,46 @@ input:focus {
   color: #648077;
 }
 
+.notification-counter {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: min(22rem, calc(100vw - 3rem));
+  padding: 0.85rem 1rem;
+  border: 1px solid #b8d9ce;
+  border-radius: 0.85rem;
+  background: #fffef9;
+  box-shadow: 0 12px 32px rgb(22 61 50 / 16%);
+}
+
+.notification-counter-total {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #0f766e;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.notification-counter strong {
+  color: #163d32;
+  font-size: 0.85rem;
+}
+
+.notification-counter p {
+  margin: 0.2rem 0 0;
+  color: #648077;
+  font-size: 0.78rem;
+}
+
 @media (max-width: 700px) {
   .auth-shell {
     grid-template-columns: 1fr;
@@ -372,5 +412,10 @@ input:focus {
 
   .reservation-row .button {
     width: 100%;
+  }
+
+  .notification-counter {
+    right: 1rem;
+    bottom: 1rem;
   }
 }

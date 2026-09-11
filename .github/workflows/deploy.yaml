@@ -1,0 +1,118 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  NODE_VERSION: 24
+
+jobs:
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout  
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
+      
+      - name: Install API dependencies
+        working-directory: lambda/api
+        run: npm ci
+
+      - name: Build API
+        working-directory: lambda/api
+        run: npm run build
+
+      - name: Install Email lambda dependencies
+        working-directory: lambda/email
+        run: npm ci
+      
+      - name: Build Email lambda
+        working-directory: lambda/email
+        run: npm run build
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: |
+          terraform init \
+            -backend-config=backend/prod.s3.tfbackend
+      
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          terraform plan \
+            -var-file=vars/prod.tfvars \
+            -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve tfplan
+      
+      - name: Terraform output
+        id: terraform
+        working-directory: terraform
+        run: |
+          echo "trpc_url=$(terraform output -raw trpc_url)" >> "$GITHUB_OUTPUT"
+          echo "frontend_bucket_name=$(terraform output -raw frontend_bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "cloudfront_id"=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
+      
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_TRPC_URL=${{ steps.terraform.outputs.trpc_url }}
+
+      - name: Deploy to S3
+        working-directory: frontend
+        run: |
+          aws s3 sync dist/ \
+          "s3://${{ steps.terraform.outputs.frontend_bucket }}" \
+          --delete
+
+      - name: Invalid CF Cache
+        working-directory: frontend
+        run: |
+            aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.terraform.outputs.cloudfront_id }}" \
+            --paths "/*"
+
+      - name: Deployment Completed
+        run: |
+        echo "Deployment completed"
+        echo "TRPC URL: ${{ steps.terraform.outputs.trpc_url }}"

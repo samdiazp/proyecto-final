@@ -65,6 +65,6 @@ export const verifyToken = async (token: string) => {
             email: decoded.email
         };
     } catch (err) {
-        throw new Error("Invalid token");
+      throw new Error(err instanceof Error ? err.message : "Invalid token", { cause: err });
     }
 };

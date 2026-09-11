@@ -27,6 +27,7 @@ import {
   getReservationsByResource,
   getReservationsByUser,
 } from "../services/reservations";
+import { getUserReminders } from "../services/scheduler";
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({
@@ -90,7 +91,7 @@ export const appRouter = router({
         if (
           error instanceof Error &&
           error.message ===
-            "User with this email already exists"
+          "User with this email already exists"
         ) {
           throw new TRPCError({
             code: "CONFLICT",
@@ -316,6 +317,15 @@ export const appRouter = router({
           reservations,
         };
       }),
+  getUserReminders: protectedProcedure.query(
+    async ({ ctx }) => {
+      const reminders = await getUserReminders(
+        ctx.user.email,
+      );
+      return { reminders };
+
+    })
+
 });
 
 export type AppRouter = typeof appRouter;
