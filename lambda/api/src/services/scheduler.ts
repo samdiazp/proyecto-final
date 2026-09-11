@@ -2,6 +2,7 @@ import {
   SchedulerClient,
   CreateScheduleCommand,
 } from "@aws-sdk/client-scheduler";
+import { get, query } from "../db";
 
 const scheduler = new SchedulerClient({});
 
@@ -76,3 +77,15 @@ export const createReservationReminder = async ({
     reminderDate: reminderTime.toISOString(),
   };
 };
+
+export const getUserReminders = async (email: string) => {
+  const reminders = query({
+    IndexName: "GSI1PK",
+    KeyConditionExpression: "GSI1PK = :email",
+    ExpressionAttributeValues: {
+      ":email": `EMAIL#${email}`,
+    },
+    ScanIndexForward: true,
+  })
+  return reminders;
+}

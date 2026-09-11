@@ -20,6 +20,13 @@ type Reservation = {
   status: "CONFIRMED" | "CANCELED";
 };
 
+type Reminder = {
+  reservationId: string;
+  resourceName: string;
+  status: "SENT";
+  sentAt: string;
+};
+
 type Session = {
   token: string;
   user: {
@@ -60,6 +67,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [resources, setResources] = useState<Resource[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [authBusy, setAuthBusy] = useState(false);
   const [busyResourceId, setBusyResourceId] = useState<string | null>(null);
   const [busyReservationId, setBusyReservationId] = useState<string | null>(null);
@@ -72,8 +80,12 @@ export default function App() {
       setResources((resourcesResponse.resources ?? []) as Resource[]);
 
       if (session) {
-        const reservationsResponse = await trpc.getUserReservations.query();
+        const [reservationsResponse, remindersResponse] = await Promise.all([
+          trpc.getUserReservations.query(),
+          trpc.getUserReminders.query(),
+        ]);
         setReservations((reservationsResponse.reservations ?? []) as Reservation[]);
+        setReminders((remindersResponse.reminders ?? []) as Reminder[]);
       }
     } catch (requestError) {
       setError(errorMessage(requestError));
@@ -166,6 +178,7 @@ export default function App() {
     setSession(null);
     setResources([]);
     setReservations([]);
+    setReminders([]);
     setMessage(null);
     setError(null);
   }
@@ -348,6 +361,18 @@ export default function App() {
           {reservations.length === 0 && <p className="empty-state">Aún no tienes reservas.</p>}
         </div>
       </section>
+
+      <aside className="notification-counter" aria-live="polite">
+        <span className="notification-counter-total">{reminders.length}</span>
+        <div>
+          <strong>Notificaciones recibidas</strong>
+          <p>
+            {reminders.length === 1
+              ? "1 recordatorio enviado a tu correo"
+              : `${reminders.length} recordatorios enviados a tu correo`}
+          </p>
+        </div>
+      </aside>
     </main>
   );
 }

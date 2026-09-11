@@ -49,7 +49,7 @@ resource "aws_lambda_function" "api_lambda" {
 
 data "archive_file" "lambda_email_zip" {
     type        = "zip"
-    source_dir  = "${path.module}/../lambda/email"
+    source_dir  = "${path.module}/../lambda/email/dist"
     output_path = "${path.module}/../lambda/email/email.zip"
 }
 
@@ -67,6 +67,7 @@ resource "aws_lambda_function" "email_lambda" {
         variables = {
             ENVIRONMENT  = var.environment
             SERVICE_NAME = "email"
+            TABLE_NAME   = aws_dynamodb_table.api_table.name
         }
     }
 

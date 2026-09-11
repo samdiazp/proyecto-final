@@ -65,4 +65,14 @@ resourceId: $RESOURCEID S
 resourceName: $RESOURCENAME S
 spots: $SPOTS N
 
-
+## Reminders
+SK: RESERVATION:#$ID S
+SK: NOTIFICATION#REMINDER S
+entity: "NOTIFICATION" S,
+type: "RESERVATION_REMINDER" S,
+status: "SENT" S,
+reservationId: $ID S,
+email: $EMAIL S,
+resourceName: $NAME S,
+reservationDate: $DATE S,
+sentAt: $DATE S,

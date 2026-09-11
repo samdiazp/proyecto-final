@@ -149,6 +149,28 @@ resource "aws_iam_role_policy" "api_dynamodb" {
   })
 }
 
+resource "aws_iam_role_policy" "email_dynamodb" {
+  name = "${var.project_name}-${var.environment}-email-dynamodb"
+
+  role = aws_iam_role.lambda_email_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "dynamodb:PutItem"
+        ]
+
+        Resource = aws_dynamodb_table.api_table.arn
+      }
+    ]
+  })
+}
+
 
 resource "aws_iam_role_policy" "api_secretsmanager" {
   role = aws_iam_role.lambda_api_exec.id
