@@ -17,7 +17,7 @@ jobs:
     name: API
     defaults:
       run:
-        working_directory: lambda/api
+        working-directory: lambda/api
 
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
     name: Email
     defaults:
       run:
-        working_directory: lambda/email
+        working-directory: lambda/email
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
