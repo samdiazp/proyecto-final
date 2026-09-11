@@ -114,5 +114,5 @@ jobs:
 
       - name: Deployment Completed
         run: |
-        echo "Deployment completed"
-        echo "TRPC URL: ${{ steps.terraform.outputs.trpc_url }}"
+          echo "Deployment completed"
+          echo "TRPC URL: ${{ steps.terraform.outputs.trpc_url }}"
