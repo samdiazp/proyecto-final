@@ -2,7 +2,7 @@ import {
   SchedulerClient,
   CreateScheduleCommand,
 } from "@aws-sdk/client-scheduler";
-import { get, query } from "../db";
+import { query } from "../db";
 
 const scheduler = new SchedulerClient({});
 
