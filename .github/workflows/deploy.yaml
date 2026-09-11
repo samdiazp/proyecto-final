@@ -27,6 +27,11 @@ jobs:
       - name: Checkout  
         uses: actions/checkout@v7
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -84,24 +89,24 @@ jobs:
           echo "cloudfront_id"=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
       
       - name: Install frontend dependencies
-        working_directory: frontend
+        working-directory: frontend
         run: npm ci
-      
+
       - name: Build frontend
-        working_directory: frontend
+        working-directory: frontend
         run: npm run build
         env:
           VITE_TRPC_URL=${{ steps.terraform.outputs.trpc_url }}
 
       - name: Deploy to S3
-        working_directory: frontend
+        working-directory: frontend
         run: |
           aws s3 sync dist/ \
           "s3://${{ steps.terraform.outputs.frontend_bucket }}" \
           --delete
 
       - name: Invalid CF Cache
-        working_directory: frontend
+        working-directory: frontend
         run: |
             aws cloudfront create-invalidation \
             --distribution-id "${{ steps.terraform.outputs.cloudfront_id }}" \
