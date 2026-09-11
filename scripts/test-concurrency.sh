@@ -10,7 +10,7 @@ REQUESTS="${REQUESTS:-5}"
 PASSWORD="${PASSWORD:-Bookslot123!}"
 API_URL="${TRPC_URL%/}"
 RUN_ID="$(date +%s)-$RANDOM"
-RESERVATION_DATE="${RESERVATION_DATE:-$(date -u -d '+1 hour 5 minutes' '+%Y-%m-%dT%H:%M:%SZ')}"
+RESERVATION_DATE="${RESERVATION_DATE:-$(date -u -d '+1 hour 1 minutes' '+%Y-%m-%dT%H:%M:%SZ')}"
 RESULTS_DIR="$(mktemp -d)"
 
 cleanup() {
