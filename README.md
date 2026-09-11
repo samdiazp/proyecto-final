@@ -60,10 +60,16 @@ El script `scripts/test-concurrency.sh` crea un recurso nuevo con `M` plazas, re
 Requiere `curl`, `jq`, un endpoint tRPC y un token de usuario para crear el recurso:
 
 ```bash
-export TRPC_URL="https://API_ID.execute-api.us-east-1.amazonaws.com/prod/api/trpc"
+export TRPC_URL="https://j1ukdy246f.execute-api.us-east-1.amazonaws.com/prod/api/trpc"
 export ADMIN_TOKEN="JWT_DEL_USUARIO"
 CAPACITY=2 REQUESTS=5 bash scripts/test-concurrency.sh
 ```
 
-La salida esperada muestra dos respuestas `HTTP 200`, tres rechazos y termina con `PASS: exactly 2 reservations were confirmed and 3 were rejected`.
+SALIDA:
+```
+CAPACITY=2 REQUESTS=5 bash scripts/test-concurrency.sh
+Creating resource with 2 places...
+Unable to create resource: {"result":{"data":{"resource":{"resourceId":"8931e971-0d8d-4e01-a319-b0a1594305ef","name":"Concurrency test 1789093834-27020","spots":2,"availableSpots":2,"reservationDate":"2026-09-11T04:30:34Z","description":"Automated concurrency test","createdAt":"2026-09-11T02:30:34.384Z"}}}}
+```
 
+FRONTEND_URL="https://d31pdf9rbnh4s1.cloudfront.net"

@@ -80,10 +80,12 @@ export const createReservationReminder = async ({
 
 export const getUserReminders = async (email: string) => {
   const reminders = query({
-    IndexName: "GSI1PK",
+    IndexName: "GSI1",
     KeyConditionExpression: "GSI1PK = :email",
+    FilterExpression: "entity = :entity",
     ExpressionAttributeValues: {
       ":email": `EMAIL#${email}`,
+      ":entity": "NOTIFICATION",
     },
     ScanIndexForward: true,
   })

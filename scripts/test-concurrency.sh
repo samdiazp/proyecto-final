@@ -10,7 +10,7 @@ REQUESTS="${REQUESTS:-5}"
 PASSWORD="${PASSWORD:-Bookslot123!}"
 API_URL="${TRPC_URL%/}"
 RUN_ID="$(date +%s)-$RANDOM"
-RESERVATION_DATE="${RESERVATION_DATE:-$(date -u -d '+2 hours' '+%Y-%m-%dT%H:%M:%SZ')}"
+RESERVATION_DATE="${RESERVATION_DATE:-$(date -u -d '+1 hour 5 minutes' '+%Y-%m-%dT%H:%M:%SZ')}"
 RESULTS_DIR="$(mktemp -d)"
 
 cleanup() {
@@ -33,7 +33,14 @@ trpc_request() {
   local procedure="$1"
   local token="$2"
   local payload="$3"
-  local args=(-sS -X POST "$API_URL/$procedure" -H "content-type: application/json" -d "$payload")
+  local args=(
+    -sS
+    --connect-timeout 10
+    --max-time 30
+    -X POST "$API_URL/$procedure"
+    -H "content-type: application/json"
+    -d "$payload"
+  )
 
   if [[ -n "$token" ]]; then
     args+=(-H "authorization: Bearer $token")
@@ -46,11 +53,16 @@ resource_payload="$(jq -nc \
   --arg name "Concurrency test $RUN_ID" \
   --arg date "$RESERVATION_DATE" \
   --argjson spots "$CAPACITY" \
-  '{json: {name: $name, description: "Automated concurrency test", spots: $spots, reservationDate: $date}}')"
+  '{name: $name, description: "Automated concurrency test", spots: $spots, reservationDate: $date}')"
+echo "Creating resource with $CAPACITY places..."
 resource_response="$(trpc_request createResource "$ADMIN_TOKEN" "$resource_payload")"
-resource_id="$(jq -er '.result.data.json.resource.resourceId' <<<"$resource_response")"
+if ! resource_id="$(jq -er '.result.data.json.resource.resourceId' <<<"$resource_response")"; then
+  echo "Unable to create resource: $resource_response" >&2
+  exit 1
+fi
 
 tokens=()
+echo "Creating $REQUESTS test users..."
 
 for ((index = 1; index <= REQUESTS; index++)); do
   email="concurrency-${RUN_ID}-${index}@example.test"
@@ -58,28 +70,41 @@ for ((index = 1; index <= REQUESTS; index++)); do
     --arg fullname "Concurrency User $index" \
     --arg email "$email" \
     --arg password "$PASSWORD" \
-    '{json: {fullname: $fullname, email: $email, password: $password}}')"
-  trpc_request register "" "$register_payload" >/dev/null
+    '{fullname: $fullname, email: $email, password: $password}')"
+  register_response="$(trpc_request register "" "$register_payload")"
+
+  if ! jq -e '.result.data.json.user' >/dev/null <<<"$register_response"; then
+    echo "Unable to register user $index: $register_response" >&2
+    exit 1
+  fi
 
   login_payload="$(jq -nc \
     --arg email "$email" \
     --arg password "$PASSWORD" \
-    '{json: {email: $email, password: $password}}')"
+    '{email: $email, password: $password}')"
   login_response="$(trpc_request login "" "$login_payload")"
-  tokens+=("$(jq -er '.result.data.json.token' <<<"$login_response")")
+
+  if ! token="$(jq -er '.result.data.json.token' <<<"$login_response")"; then
+    echo "Unable to log in user $index: $login_response" >&2
+    exit 1
+  fi
+
+  tokens+=("$token")
 done
 
 pids=()
+echo "Sending $REQUESTS concurrent reservation requests..."
 
 for ((index = 1; index <= REQUESTS; index++)); do
   idempotency_key="concurrency-${RUN_ID}-${index}"
   reservation_payload="$(jq -nc \
     --arg resourceId "$resource_id" \
     --arg idempotencyKey "$idempotency_key" \
-    '{json: {resourceId: $resourceId, spots: 1, idempotencyKey: $idempotencyKey}}')"
+    '{resourceId: $resourceId, spots: 1, idempotencyKey: $idempotencyKey}')"
 
   (
-    if ! curl -sS -o "$RESULTS_DIR/$index.body" -w '%{http_code}' \
+    if ! curl -sS --connect-timeout 10 --max-time 30 \
+      -o "$RESULTS_DIR/$index.body" -w '%{http_code}' \
       -X POST "$API_URL/createReservation" \
       -H "content-type: application/json" \
       -H "authorization: Bearer ${tokens[$((index - 1))]}" \
