@@ -195,6 +195,7 @@ export const appRouter = router({
       z.object({
         resourceId: z.string().min(1),
         spots: z.number().int().min(1),
+        idempotencyKey: z.string().min(1).max(128),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -204,6 +205,7 @@ export const appRouter = router({
             userId: ctx.user.userId,
             resourceId: input.resourceId,
             spots: input.spots,
+            idempotencyKey: input.idempotencyKey,
           });
 
         return {

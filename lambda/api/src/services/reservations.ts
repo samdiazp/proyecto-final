@@ -15,6 +15,50 @@ export type CreateReservation = {
   userId: string;
   resourceId: string;
   spots: number;
+  idempotencyKey: string;
+};
+
+const getIdempotentReservation = async (
+  data: CreateReservation,
+) => {
+  const idempotencyRecord = await get({
+    Key: {
+      PK: `USER#${data.userId}`,
+      SK: `IDEMPOTENCY#${data.idempotencyKey}`,
+    },
+    ConsistentRead: true,
+  });
+
+  if (!idempotencyRecord) {
+    return null;
+  }
+
+  if (
+    idempotencyRecord.resourceId !== data.resourceId ||
+    idempotencyRecord.spots !== data.spots
+  ) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "Idempotency key was already used for another reservation",
+    });
+  }
+
+  const reservation = await get({
+    Key: {
+      PK: `RESERVATION#${idempotencyRecord.reservationId}`,
+      SK: "META",
+    },
+    ConsistentRead: true,
+  });
+
+  if (!reservation) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Idempotency record has no reservation",
+    });
+  }
+
+  return reservation;
 };
 
 export const createReservation = async (
@@ -25,6 +69,12 @@ export const createReservation = async (
       code: "BAD_REQUEST",
       message: "Spots must be greater than 0",
     });
+  }
+
+  const idempotentReservation = await getIdempotentReservation(data);
+
+  if (idempotentReservation) {
+    return idempotentReservation;
   }
 
   const [user, resource] = await Promise.all([
@@ -134,6 +184,25 @@ export const createReservation = async (
               "attribute_not_exists(PK)",
           },
         },
+        {
+          Put: {
+            TableName: process.env.TABLE_NAME!,
+
+            Item: {
+              PK: `USER#${data.userId}`,
+              SK: `IDEMPOTENCY#${data.idempotencyKey}`,
+
+              entity: "IDEMPOTENCY",
+              reservationId,
+              resourceId: data.resourceId,
+              spots: data.spots,
+              createdAt,
+            },
+
+            ConditionExpression:
+              "attribute_not_exists(PK)",
+          },
+        },
       ],
     });
 
@@ -142,6 +211,13 @@ export const createReservation = async (
       error instanceof Error &&
       error.name === "TransactionCanceledException"
     ) {
+      const idempotentReservation =
+        await getIdempotentReservation(data);
+
+      if (idempotentReservation) {
+        return idempotentReservation;
+      }
+
       const existingReservation = await get({
         Key: {
           PK: `USER#${data.userId}`,

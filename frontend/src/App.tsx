@@ -68,6 +68,7 @@ export default function App() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [idempotencyKeys, setIdempotencyKeys] = useState<Record<string, string>>({});
   const [authBusy, setAuthBusy] = useState(false);
   const [busyResourceId, setBusyResourceId] = useState<string | null>(null);
   const [busyReservationId, setBusyReservationId] = useState<string | null>(null);
@@ -138,6 +139,12 @@ export default function App() {
   }
 
   async function reserve(resourceId: string) {
+    const idempotencyKey = idempotencyKeys[resourceId] ?? crypto.randomUUID();
+
+    if (!idempotencyKeys[resourceId]) {
+      setIdempotencyKeys((keys) => ({ ...keys, [resourceId]: idempotencyKey }));
+    }
+
     setBusyResourceId(resourceId);
     setError(null);
     setMessage(null);
@@ -146,7 +153,9 @@ export default function App() {
       await trpc.createReservation.mutate({
         resourceId,
         spots: 1,
+        idempotencyKey,
       });
+      setIdempotencyKeys(({ [resourceId]: _, ...keys }) => keys);
       setMessage("Tu plaza ha quedado confirmada.");
       await refreshDashboard();
     } catch (requestError) {
@@ -179,6 +188,7 @@ export default function App() {
     setResources([]);
     setReservations([]);
     setReminders([]);
+    setIdempotencyKeys({});
     setMessage(null);
     setError(null);
   }

@@ -65,6 +65,15 @@ resourceId: $RESOURCEID S
 resourceName: $RESOURCENAME S
 spots: $SPOTS N
 
+## Idempotencia de reservas
+PK: USER#$ID S
+SK: IDEMPOTENCY#$KEY S
+entity: IDEMPOTENCY S
+reservationId: $ID S
+resourceId: $RESOURCEID S
+spots: $SPOTS N
+createdAt: $DATE S
+
 ## Reminders
 SK: RESERVATION:#$ID S
 SK: NOTIFICATION#REMINDER S
